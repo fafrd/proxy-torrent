@@ -4,6 +4,6 @@ encoding_list = UTF-8
 scgi_port = 127.0.0.1:5000
 
 # download directory
-directory = /opt/what/data
+directory = /opt/proxy-torrent/data
 # session directory
-session = /opt/what/session
+session = /opt/proxy-torrent/session
