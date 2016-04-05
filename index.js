@@ -48,31 +48,19 @@ var cucumber = 32741218;
 //download_torrentfile(cucumber);
 //setTimeout(download_torrentfile, 5000, cucumber);
 
-//var app = require('express')();
-//var http = require('http').Server(app);
+var bodyparser = require('body-parser')
+var express = require('express');
+var app = express();
+var router = express.Router();
+var port = 3333;
 
+app.use(bodyparser.json());
 
+//testing: use curl -i -H "Content-Type: application/json" [url] -d '{"MyKey":"My Value"}'
+app.post('/', function(request, response) { 
+	console.log(request.body);
+	response.send(request.body);
+});
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+app.listen(port);
 
