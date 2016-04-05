@@ -1,0 +1,24 @@
+{
+  "name": "proxy-torrent",
+  "version": "1.0.0",
+  "description": "Webapp that torrents from private trackers and puts the result up for download",
+  "main": "index.js",
+  "dependencies": {
+    "node-rtorrent": "^1.1.0",
+    "whatcd": "^2.1.0"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/fafrd/proxy-torrent.git"
+  },
+  "author": "Kian Bradley <kbradley@ucmerced.edu>",
+  "license": "GPL-3.0",
+  "bugs": {
+    "url": "https://github.com/fafrd/proxy-torrent/issues"
+  },
+  "homepage": "https://github.com/fafrd/proxy-torrent#readme"
+}

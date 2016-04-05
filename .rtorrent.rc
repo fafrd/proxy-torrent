@@ -1,0 +1,9 @@
+encoding_list = UTF-8
+
+# make sure you've firewalled port 5000
+scgi_port = 127.0.0.1:5000
+
+# download directory
+directory = /opt/what/data
+# session directory
+session = /opt/what/session
