@@ -47,10 +47,10 @@ function download_torrentfile(torrentid) {
 	});
 	var url = 'https://what.cd/torrents.php?action=download&id=' + torrentid + '&authkey=' + authkey + '&torrent_pass=' +  passkey;
 	console.log(url);
-	//rt.loadLink(url, function (err, data) {
-	//	if (err) return console.log('err: ', err);
-	//	console.log(JSON.stringify(data, null, 4));
-	//});
+	rt.loadLink(url, function (err, data) {
+		if (err) return console.log('err: ', err);
+		console.log(JSON.stringify(data, null, 4));
+	});
 };
 
 function search_by_artist(artistname) {
@@ -70,6 +70,7 @@ function get_progress(torrentid) {
 	//TODO
 
 	return progress;
+}
 
 // POST API handler
 //testing: use curl -i -H "Content-Type: application/json" chorizo.link:3333 -d '{"action":"artistsearch","artistname":"Velatix"}'
@@ -88,7 +89,7 @@ app.post('/', function(request, response) {
 		response.send("POST received; add torrent by id\n");
 		download_torrentfile(request.body.torrentid);
 	} else if(request.body.action === "getprogress") {
-		var progress = get_progress(request.body.action(torrentid);
+		var progress = get_progress(request.body.action(torrentid));
 		response.send(progress);
 	} else {
 		response.send("invalid request!");
