@@ -5,6 +5,7 @@ var whatcd = require("whatcd");
 
 var bodyparser = require('body-parser')
 var express = require('express');
+var admzip = require('adm-zip');
 
 var app = express();
 var router = express.Router();
@@ -34,7 +35,8 @@ var rt = new node_rtorrent({
 });
 
 //utility functions to handle API calls
-function download_torrentfile(torrentid) {
+function addtorrentbyid(torrentid) {
+	console.log("addtorrentbyid; torrentid:" + torrentid);
 	var torrentSize, torrentFormat, torrentFilepath;
 	client.api_request({action: "torrent", id: torrentid}, function(err, data) {
 		if(err) {
@@ -53,24 +55,55 @@ function download_torrentfile(torrentid) {
 	});
 };
 
-function search_by_artist(artistname) {
+function searchbyartist(artistname) {
+	console.log("searchbyartist; artistname: " + artistname);
 	client.api_request({action: "artist", artistname: artistname}, function(err, data) {
-		if(err) {
-			return console.log(err);
-		}
+		if(err) return console.log(err);
 		console.log(data);
 		return data;
 	});
 };
 
-function get_progress(torrentid) {
-	//progress is a percentage with accuracy to 0.1%
-	var progress = "0.0";
-	
-	//TODO
+function getprogress(torrenthash) {
+	console.log("getprogress; torrenthash: " + torrenthash);
+	var returnobj = {"downspeed": "", "upspeed": "", "progress": ""};
+	rt.getAll(function(err, data) {
+		if(err) return console.log(err);
+		for(i in data.torrents) {
+			if(torrenthash == data.torrents[i].hash) {
+				returnobj.downspeed = data.torrents[i].down_rate;
+				returnobj.upspeed = data.torrents[i].up_rate;
+				returnobj.progress = (data.torrents[i].completed / data.torrents[i].size);
+			}
+		}
+	return returnobj;
+	});
+};
 
-	return progress;
-}
+function ziptorrent(torrenthash) {
+	console.log("ziptorrent; torrenthash: " + torrenthash);
+	rt.getAll(function(err, data) {
+		if(err) return console.log(err);
+		for(i in data.torrents) {
+			if(torrenthash == data.torrents[i].hash) {
+				if(data.torrents[i].completed != data.torrents[i].size)
+					return "err: torrent not complete";
+				//check if file exists
+				fs.stat('zips/' + torrenthash + '.zip', function(err, stat) {
+					if(err == null) 
+						return 'zips/' + torrenthash + '.zip';
+					//zipitup
+					var savelocation = 'zips/' + torrenthash + '.zip';
+					var zip = new admzip();
+					zip.addLocalFolder(data.torrents[i].path);
+					zip.writeZip('zips/' + torrenthash + '.zip');
+					return 'zips/' + torrenthash + '.zip';
+				});
+			}
+		}
+		return "err: invalid hash";
+	});
+};
 
 // POST API handler
 //testing: use curl -i -H "Content-Type: application/json" chorizo.link:3333 -d '{"action":"artistsearch","artistname":"Velatix"}'
@@ -79,18 +112,19 @@ app.post('/', function(request, response) {
 	
 	if(request.body.action === "artistsearch") {
 		response.send("POST received; artist search\n");
-		search_resonse = search_by_artist(request.body.artistname);
-		if(search_response instanceof Error) {
+		searchresonse = searchbyartist(request.body.artistname);
+		if(searchresponse instanceof Error) {
 			console.log("Search returned an error ;(");
 		} else {
-			console.log(search_response);
+			console.log(searchresponse);
 		}
 	} else if(request.body.action === "addtorrentbyid") {
 		response.send("POST received; add torrent by id\n");
-		download_torrentfile(request.body.torrentid);
+		addtorrentbyid(request.body.torrentid);
 	} else if(request.body.action === "getprogress") {
-		var progress = get_progress(request.body.action(torrentid));
-		response.send(progress);
+		response.send(getprogress(request.body.torrenthash));
+	} else if(request.body.action === "ziptorrent") {
+		response.send(ziptorrent(request.body.torrenthash));		
 	} else {
 		response.send("invalid request!");
 		console.log("invalid request");
