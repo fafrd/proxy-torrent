@@ -7,3 +7,7 @@ scgi_port = 127.0.0.1:5000
 directory = /opt/proxy-torrent/data
 # session directory
 session = /opt/proxy-torrent/session
+
+# download rate in KiB, 0 for unlimited
+download_rate = 10
+upload_rate = 0
