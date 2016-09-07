@@ -75,6 +75,10 @@ function getprogress(torrenthash) {
 		console.log(data);
 	});
 	console.log(data);
+	if(data == null) {
+		console.log("rtorrent is not running, or contained no such torrent");
+		return "err: rtorrent not running";
+	}
 	for(i in data.torrents) {
 		if(torrenthash == data.torrents[i].hash) {
 			found = true;
