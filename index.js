@@ -66,43 +66,59 @@ function searchbyartist(artistname) {
 
 function getprogress(torrenthash) {
 	console.log("getprogress; torrenthash: " + torrenthash);
-	var returnobj = {"downspeed": "", "upspeed": "", "progress": ""};
-	rt.getAll(function(err, data) {
-		if(err) return console.log(err);
-		for(i in data.torrents) {
-			if(torrenthash == data.torrents[i].hash) {
-				returnobj.downspeed = data.torrents[i].down_rate;
-				returnobj.upspeed = data.torrents[i].up_rate;
-				returnobj.progress = (data.torrents[i].completed / data.torrents[i].size);
-			}
-		}
-	return returnobj;
+	var returnobj = {"downspeed": "", "upspeed": "", "progress": ""}, found = false;
+	var err, data;
+	console.log("data:");
+	rt.getAll(function(rt_err, rt_data) {
+		err = rt_err;
+		data = rt_data;
+		console.log(data);
 	});
+	console.log(data);
+	for(i in data.torrents) {
+		if(torrenthash == data.torrents[i].hash) {
+			found = true;
+			returnobj.downspeed = data.torrents[i].down_rate;
+			returnobj.upspeed = data.torrents[i].up_rate;
+			returnobj.progress = (data.torrents[i].completed / data.torrents[i].size);
+		}
+	}
+	if(found == false) {
+		console.log("getprogress; hash not found");
+		return "err: invalid hash";
+	}
+	else {
+		console.log("getprogress; returning...");
+		return returnobj;
+	}
 };
 
 function ziptorrent(torrenthash) {
 	console.log("ziptorrent; torrenthash: " + torrenthash);
-	rt.getAll(function(err, data) {
-		if(err) return console.log(err);
-		for(i in data.torrents) {
-			if(torrenthash == data.torrents[i].hash) {
-				if(data.torrents[i].completed != data.torrents[i].size)
-					return "err: torrent not complete";
-				//check if file exists
-				fs.stat('zips/' + torrenthash + '.zip', function(err, stat) {
-					if(err == null) 
-						return 'zips/' + torrenthash + '.zip';
-					//zipitup
-					var savelocation = 'zips/' + torrenthash + '.zip';
-					var zip = new admzip();
-					zip.addLocalFolder(data.torrents[i].path);
-					zip.writeZip('zips/' + torrenthash + '.zip');
-					return 'zips/' + torrenthash + '.zip';
-				});
-			}
-		}
-		return "err: invalid hash";
+	var err, data;
+	rt.getAll(function(rt_err, rt_data) {
+		err = rt_err;
+		data = rt_data;
 	});
+	if(err) return console.log(err);
+	for(i in data.torrents) {
+		if(torrenthash == data.torrents[i].hash) {
+			if(data.torrents[i].completed != data.torrents[i].size)
+				return "err: torrent not complete";
+			//check if file exists
+			fs.stat('zips/' + torrenthash + '.zip', function(err, stat) {
+				if(err == null) 
+					return 'zips/' + torrenthash + '.zip';
+				//zipitup
+				var savelocation = 'zips/' + torrenthash + '.zip';
+				var zip = new admzip();
+				zip.addLocalFolder(data.torrents[i].path);
+				zip.writeZip('zips/' + torrenthash + '.zip');
+				return 'zips/' + torrenthash + '.zip';
+			});
+		}
+	}
+	return "err: invalid hash";
 };
 
 // POST API handler
@@ -124,7 +140,7 @@ app.post('/', function(request, response) {
 	} else if(request.body.action === "getprogress") {
 		response.send(getprogress(request.body.torrenthash));
 	} else if(request.body.action === "ziptorrent") {
-		response.send(ziptorrent(request.body.torrenthash));		
+		response.send(ziptorrent(request.body.torrenthash));
 	} else {
 		response.send("invalid request!");
 		console.log("invalid request");
