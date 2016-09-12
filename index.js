@@ -64,37 +64,37 @@ function searchbyartist(artistname) {
 	});
 };
 
-function getprogress(torrenthash) {
+function getprogress(torrenthash, response) {
 	console.log("getprogress; torrenthash: " + torrenthash);
 	var returnobj = {"downspeed": "", "upspeed": "", "progress": ""}, found = false;
 	var err, data;
-	console.log("data:");
 	rt.getAll(function(rt_err, rt_data) {
 		err = rt_err;
 		data = rt_data;
-		console.log(data);
-	});
-	console.log(data);
-	if(data == null) {
-		console.log("rtorrent is not running, or contained no such torrent");
-		return "err: rtorrent not running";
-	}
-	for(i in data.torrents) {
-		if(torrenthash == data.torrents[i].hash) {
-			found = true;
-			returnobj.downspeed = data.torrents[i].down_rate;
-			returnobj.upspeed = data.torrents[i].up_rate;
-			returnobj.progress = (data.torrents[i].completed / data.torrents[i].size);
+		console.log("data:");
+	//	console.log(data);
+
+		if(data == null) {
+			console.log("rtorrent is not running, or contained no such torrent");
+			return "err: rtorrent not running";
 		}
-	}
-	if(found == false) {
-		console.log("getprogress; hash not found");
-		return "err: invalid hash";
-	}
-	else {
-		console.log("getprogress; returning...");
-		return returnobj;
-	}
+		for(i in data.torrents) {
+			if(torrenthash.toUpperCase() == data.torrents[i].hash) {
+				found = true;
+				returnobj.downspeed = data.torrents[i].down_rate;
+				returnobj.upspeed = data.torrents[i].up_rate;
+				returnobj.progress = (data.torrents[i].completed / data.torrents[i].size);
+			}
+		}
+		if(found == false) {
+			console.log("getprogress; hash not found");
+			return "err: invalid hash";
+		}
+		else {
+			console.log(returnobj);
+			response.send(returnobj);
+		}
+	});
 };
 
 function ziptorrent(torrenthash) {
@@ -142,7 +142,8 @@ app.post('/', function(request, response) {
 		response.send("POST received; add torrent by id\n");
 		addtorrentbyid(request.body.torrentid);
 	} else if(request.body.action === "getprogress") {
-		response.send(getprogress(request.body.torrenthash));
+		//response sending here is deferred. it is performed asynchronously inside getprogress
+		getprogress(request.body.torrenthash, response);
 	} else if(request.body.action === "ziptorrent") {
 		response.send(ziptorrent(request.body.torrenthash));
 	} else {
